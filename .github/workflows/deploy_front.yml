@@ -26,7 +26,7 @@ jobs:
           username: ${{ secrets.SOMMELIER_FRONT_USER }}
           key: ${{ secrets.SOMMELIER_FRONT_SSH_KEY }}
           port: 22
-          source: ".next,node_modules,public,package.json,package-lock.json"
+          source: ".next,node_modules,public,package.json,package-lock.json,deploy/sommelier_frontend.service,deploy/nginx/tusommeliervirtual.conf"
           target: "/srv/sommelier_frontend"
 
       - name: Deploy via SSH
@@ -47,7 +47,7 @@ jobs:
             sudo ln -sf /etc/nginx/sites-available/tusommeliervirtual.conf /etc/nginx/sites-enabled/
             sudo nginx -t && sudo systemctl reload nginx
 
-      - name: Verificación rápida post-deploy
+      - name: Validación post-deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SOMMELIER_FRONT_HOST }}
@@ -56,10 +56,13 @@ jobs:
           port: 22
           script: |
             echo "=== Estado del servicio frontend ==="
-            sudo systemctl status sommelier_frontend.service --no-pager
+            systemctl is-active sommelier_frontend.service
 
-            echo "=== Últimos logs del frontend ==="
-            sudo journalctl -u sommelier_frontend.service -n 30 --no-pager
+            echo "=== Últimos logs del servicio ==="
+            sudo journalctl -u sommelier_frontend.service -n 20 --no-pager
 
-            echo "=== Test de HTTP con curl ==="
-            curl -I https://tusommeliervirtual.com
+            echo "=== Test HTTP local ==="
+            curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3000
+
+            echo "=== Test HTTP público ==="
+            curl -s -o /dev/null -w "%{http_code}" https://tusommeliervirtual.com
