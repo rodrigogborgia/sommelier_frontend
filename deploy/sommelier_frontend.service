@@ -1,0 +1,15 @@
+[Unit]
+Description=Sommelier Frontend (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/sommelier_frontend
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=always
+Environment=NODE_ENV=production
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
