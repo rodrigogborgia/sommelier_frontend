@@ -38,12 +38,36 @@ jobs:
             fi
 
             # Copiar unit file del frontend
-            sudo cp /srv/sommelier_frontend/deploy/sommelier_frontend.service /etc/systemd/system/
-            sudo systemctl daemon-reload
-            sudo systemctl restart sommelier_frontend.service
+            if [ -f "/srv/sommelier_frontend/deploy/sommelier_frontend.service" ]; then
+              sudo cp /srv/sommelier_frontend/deploy/sommelier_frontend.service /etc/systemd/system/
+              sudo systemctl daemon-reload
+              sudo systemctl restart sommelier_frontend.service
+            else
+              echo "⚠️ Unit file sommelier_frontend.service no encontrado en el repo"
+            fi
 
             # Copiar configuración Nginx
-            sudo cp /srv/sommelier_frontend/deploy/nginx/tusommeliervirtual.conf /etc/nginx/sites-available/
-            sudo ln -sf /etc/nginx/sites-available/tusommeliervirtual.conf /etc/nginx/sites-enabled/
-            sudo nginx -t
-            sudo systemctl reload nginx
+            if [ -f "/srv/sommelier_frontend/deploy/nginx/tusommeliervirtual.conf" ]; then
+              sudo cp /srv/sommelier_frontend/deploy/nginx/tusommeliervirtual.conf /etc/nginx/sites-available/
+              sudo ln -sf /etc/nginx/sites-available/tusommeliervirtual.conf /etc/nginx/sites-enabled/
+              sudo nginx -t && sudo systemctl reload nginx
+            else
+              echo "⚠️ Archivo Nginx tusommeliervirtual.conf no encontrado en el repo"
+            fi
+
+      - name: Verificación rápida post-deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SOMMELIER_FRONT_HOST }}
+          username: ${{ secrets.SOMMELIER_FRONT_USER }}
+          key: ${{ secrets.SOMMELIER_FRONT_SSH_KEY }}
+          port: 22
+          script: |
+            echo "=== Estado del servicio frontend ==="
+            sudo systemctl status sommelier_frontend.service --no-pager
+
+            echo "=== Últimos logs del frontend ==="
+            sudo journalctl -u sommelier_frontend.service -n 30 --no-pager
+
+            echo "=== Test de HTTP con curl ==="
+            curl -I https://tusommeliervirtual.com
