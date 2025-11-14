@@ -20,12 +20,13 @@ import { LoadingIcon } from "./Icons";
 import { MessageHistory } from "./AvatarSession/MessageHistory";
 
 import { AVATARS } from "@/app/lib/constants";
+import { apiPost } from "@/app/services/api"; // 👈 usamos el servicio centralizado
 
 // CONFIGURACIÓN PREDETERMINADA
 const DEFAULT_CONFIG: StartAvatarRequest = {
   quality: AvatarQuality.Low,
   avatarName: AVATARS[0].avatar_id,
-  knowledgeId: undefined, // el conocimiento lo da tu backend (RAG)
+  knowledgeId: undefined,
   voice: {
     rate: 1.5,
     emotion: VoiceEmotion.SERIOUS,
@@ -49,16 +50,9 @@ function InteractiveAvatar() {
   // FUNCIÓN PARA OBTENER EL TOKEN DESDE TU BACKEND
   async function fetchAccessToken() {
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/get-access-token`,
-        { method: "POST" }
-      );
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${await response.text()}`);
-      }
-      const token = await response.text();
+      const token = await apiPost("/get-access-token", {}); // 👈 ahora usa el servicio
       console.log("Access Token:", token);
-      return token;
+      return token.access_token || token; // según cómo lo devuelva tu backend
     } catch (error) {
       console.error("Error fetching access token:", error);
       throw error;
@@ -167,7 +161,7 @@ function InteractiveAvatar() {
 
 export default function InteractiveAvatarWrapper() {
   return (
-    <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_BASE_API_URL}>
+    <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_API_BASE_URL}>
       <InteractiveAvatar />
     </StreamingAvatarProvider>
   );
