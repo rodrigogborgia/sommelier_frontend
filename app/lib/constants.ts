@@ -1,6 +1,6 @@
 export const AVATARS = [
   {
-    avatar_id: "Dexter_Lawyer_Sitting_public", 
+    avatar_id: "Dexter_Casual_Front_public", 
     name: "Sammy el Sommelier",
     voice_id: "7a544b76e07648849ed54617f18ea280",
   },
