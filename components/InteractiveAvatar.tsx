@@ -1,12 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useMemoizedFn, useUnmount } from "ahooks";
 
-import { Button } from "./Button";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
 import { AvatarControls } from "./AvatarSession/AvatarControls";
 import { useStreamingAvatarSession } from "./logic/useStreamingAvatarSession";
 import { useVoiceChat } from "./logic/useVoiceChat";
-import { useTextChat } from "./logic/useTextChat"; // 👈 nuevo hook corregido
+import { useTextChat } from "./logic/useTextChat";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
 import { LoadingIcon } from "./Icons";
 import { MessageHistory } from "./AvatarSession/MessageHistory";
@@ -17,16 +16,14 @@ function InteractiveAvatar() {
   const { initAvatar, stopAvatar, sendText, sessionState, stream, sessionId } =
     useStreamingAvatarSession();
   const { startVoiceChat } = useVoiceChat();
-  const { sendMessage } = useTextChat(); // 👈 usamos el hook de texto
+  const { sendMessage } = useTextChat();
 
   const mediaStream = useRef<HTMLVideoElement>(null);
   const tokenRef = useRef<string | null>(null);
 
-  // Obtener token desde backend
   async function fetchAccessToken() {
     try {
       const token = await apiPost("/get-access-token", {});
-      console.log("Access Token:", token);
       return token.access_token || token;
     } catch (error) {
       console.error("Error fetching access token:", error);
@@ -34,11 +31,9 @@ function InteractiveAvatar() {
     }
   }
 
-  // Consultar PDFs y obtener knowledgeId
   async function fetchKnowledgeId(question: string) {
     try {
       const res = await apiPost("/query", { question });
-      console.log("Query result:", res);
       if (res.ids && res.ids[0] && res.ids[0][0]) {
         return res.ids[0][0];
       }
@@ -49,7 +44,6 @@ function InteractiveAvatar() {
     }
   }
 
-  // Iniciar sesión con saludo inicial
   const startSessionV2 = useMemoizedFn(async (isVoiceChat: boolean) => {
     try {
       const newToken = await fetchAccessToken();
@@ -61,8 +55,9 @@ function InteractiveAvatar() {
         if (sessionId && tokenRef.current) {
           clearInterval(checkSession);
 
-          // 👋 Enviar saludo inicial
-          sendMessage("¡Qué lindo es estar hoy con todos ustedes! ¿Qué les gustaría saber de Espacio Sommelier?");
+          sendMessage(
+            "¡Qué lindo es estar hoy con todos ustedes! ¿Qué les gustaría saber de Espacio Sommelier?"
+          );
 
           if (isVoiceChat) {
             await startVoiceChat(tokenRef.current, sessionId);
@@ -74,7 +69,6 @@ function InteractiveAvatar() {
     }
   });
 
-  // Manejar preguntas del usuario
   const handleUserMessage = useMemoizedFn(async (userMessage: string) => {
     if (!tokenRef.current || !sessionId) {
       console.error("No hay sesión activa");
@@ -86,7 +80,6 @@ function InteractiveAvatar() {
       ? `${userMessage} [knowledgeId:${knowledgeId}]`
       : userMessage;
 
-    // 👈 enviar mensaje al avatar vía WebSocket
     sendMessage(message);
   });
 
@@ -122,11 +115,12 @@ function InteractiveAvatar() {
           {sessionState === StreamingAvatarSessionState.CONNECTED ? (
             <AvatarControls onSendMessage={handleUserMessage} />
           ) : sessionState === StreamingAvatarSessionState.INACTIVE ? (
-          <div className="flex justify-center items-center h-screen bg-black">
-            <button className="text-white text-lg px-8 py-4 rounded-lg bg-[#7559FF]">
+            <button
+              className="bg-transparent text-white text-lg px-6 py-2 rounded-lg border border-white hover:bg-[#7559FF] transition-colors"
+              onClick={() => startSessionV2(true)}
+            >
               Iniciar Chat de Voz
             </button>
-          </div>
           ) : (
             <LoadingIcon />
           )}
