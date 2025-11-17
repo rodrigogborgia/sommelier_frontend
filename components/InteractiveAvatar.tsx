@@ -122,14 +122,11 @@ function InteractiveAvatar() {
           {sessionState === StreamingAvatarSessionState.CONNECTED ? (
             <AvatarControls onSendMessage={handleUserMessage} />
           ) : sessionState === StreamingAvatarSessionState.INACTIVE ? (
-            <div className="flex flex-row gap-4">
-              <Button onClick={() => startSessionV2(true)}>
-                Iniciar Chat de Voz
-              </Button>
-              <Button onClick={() => startSessionV2(false)}>
-                Iniciar Chat de Texto
-              </Button>
-            </div>
+          <div className="flex justify-center items-center h-screen bg-black">
+            <button className="text-white text-lg px-8 py-4 rounded-lg bg-[#7559FF]">
+              Iniciar Chat de Voz
+            </button>
+          </div>
           ) : (
             <LoadingIcon />
           )}
