@@ -1,35 +1,30 @@
 import { useCallback } from "react";
-
 import { useStreamingAvatarContext } from "./context";
 
 export const useConversationState = () => {
-  const { avatarRef, isAvatarTalking, isUserTalking, isListening } =
-    useStreamingAvatarContext();
+  const { avatarRef, setIsListening } = useStreamingAvatarContext();
 
-const startListening = useCallback(() => {
-  if (!avatarRef.current) return;
-  // ❌ Esto no existe en WebSocket nativo:
-  // avatarRef.current.startListening();
+  // Iniciar escucha (si HeyGen lo soporta vía mensaje WS)
+  const startListening = useCallback(() => {
+    if (!avatarRef.current) return;
+    try {
+      avatarRef.current.send(JSON.stringify({ type: "start_listening" }));
+      setIsListening(true);
+    } catch (err) {
+      console.error("Error enviando start_listening:", err);
+    }
+  }, [avatarRef, setIsListening]);
 
-  // ✅ En su lugar, podés mandar un mensaje al WS si HeyGen lo soporta:
-  avatarRef.current.send(JSON.stringify({ type: "start_listening" }));
-}, [avatarRef]);
+  // Detener escucha
+  const stopListening = useCallback(() => {
+    if (!avatarRef.current) return;
+    try {
+      avatarRef.current.send(JSON.stringify({ type: "stop_listening" }));
+      setIsListening(false);
+    } catch (err) {
+      console.error("Error enviando stop_listening:", err);
+    }
+  }, [avatarRef, setIsListening]);
 
-const stopListening = useCallback(() => {
-  if (!avatarRef.current) return;
-  // ❌ Esto tampoco existe:
-  // avatarRef.current.stopListening();
-
-  // ✅ Igual que arriba, mandás un mensaje al WS:
-  avatarRef.current.send(JSON.stringify({ type: "stop_listening" }));
-}, [avatarRef]);
-
-
-  return {
-    isAvatarListening: isListening,
-    startListening,
-    stopListening,
-    isUserTalking,
-    isAvatarTalking,
-  };
+  return { startListening, stopListening };
 };
