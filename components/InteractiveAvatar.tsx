@@ -21,22 +21,22 @@ function InteractiveAvatar() {
   const mediaStream = useRef<HTMLVideoElement>(null);
   const tokenRef = useRef<string | null>(null);
 
-  // ✅ Corrección: quitar el prefijo /api para evitar doble /api/api
+  // ✅ Ahora usamos "start-session" (sin barra) porque el wrapper ya normaliza
   async function fetchAccessToken() {
     try {
       const res = await apiPost("start-session", {});
       console.log("Respuesta completa del backend (start-session):", res);
-      return res.data?.token; // ahora viene junto con session_i
+      return res.data?.token; // viene junto con session_id
     } catch (error) {
       console.error("Error fetching access token:", error);
       throw error;
     }
   }
 
-  // ✅ Corrección: quitar el prefijo /api
+  // ✅ También usamos "query" (sin barra)
   async function fetchKnowledgeId(question: string) {
     try {
-      const res = await apiPost("/query", { question });
+      const res = await apiPost("query", { question });
       console.log("Respuesta completa del backend (query):", res);
       if (res.data?.ids && res.data.ids[0] && res.data.ids[0][0]) {
         console.log("KnowledgeId extraído:", res.data.ids[0][0]);
