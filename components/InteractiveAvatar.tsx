@@ -21,10 +21,11 @@ function InteractiveAvatar() {
   const mediaStream = useRef<HTMLVideoElement>(null);
   const tokenRef = useRef<string | null>(null);
 
+  // ✅ Corrección: siempre devolver el string del access_token
   async function fetchAccessToken() {
     try {
-      const token = await apiPost("/get-access-token", {});
-      return token.access_token || token;
+      const res = await apiPost("/get-access-token", {});
+      return res.access_token; // aseguramos que sea string
     } catch (error) {
       console.error("Error fetching access token:", error);
       throw error;
@@ -47,7 +48,7 @@ function InteractiveAvatar() {
   const startSessionV2 = useMemoizedFn(async (isVoiceChat: boolean) => {
     try {
       const newToken = await fetchAccessToken();
-      tokenRef.current = newToken;
+      tokenRef.current = newToken; // ahora seguro es un string
 
       initAvatar(newToken);
 
