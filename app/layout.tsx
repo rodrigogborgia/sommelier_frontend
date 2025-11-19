@@ -14,10 +14,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // 👇 Esto se ejecuta en el navegador y te muestra el commit
+  if (typeof window !== "undefined") {
+    console.log("Frontend commit:", process.env.NEXT_PUBLIC_COMMIT_HASH);
+  }
+
   return (
-    // Se elimina la variable de fuente de la clase
-    // Se añade suppressHydrationWarning para ignorar el conflicto del body
-    <html lang="en"> 
+    <html lang="en">
       <body suppressHydrationWarning={true}>
         {children}
       </body>
