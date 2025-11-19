@@ -21,23 +21,23 @@ function InteractiveAvatar() {
   const mediaStream = useRef<HTMLVideoElement>(null);
   const tokenRef = useRef<string | null>(null);
 
-  // ✅ Corrección + logs: endpoint correcto y extracción del token
+  // ✅ Corrección: quitar el prefijo /api para evitar doble /api/api
   async function fetchAccessToken() {
     try {
-      const res = await apiPost("/api/get-access-token", {});
+      const res = await apiPost("/get-access-token", {});
       console.log("Respuesta completa del backend (get-access-token):", res);
       console.log("Token extraído:", res?.data?.token);
-      return res.data?.token; // backend devuelve { data: { token: "..." } }
+      return res.data?.token;
     } catch (error) {
       console.error("Error fetching access token:", error);
       throw error;
     }
   }
 
-  // ✅ Corrección + logs: endpoint correcto y acceso a res.data.ids
+  // ✅ Corrección: quitar el prefijo /api
   async function fetchKnowledgeId(question: string) {
     try {
-      const res = await apiPost("/api/query", { question });
+      const res = await apiPost("/query", { question });
       console.log("Respuesta completa del backend (query):", res);
       if (res.data?.ids && res.data.ids[0] && res.data.ids[0][0]) {
         console.log("KnowledgeId extraído:", res.data.ids[0][0]);
